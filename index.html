@@ -48,8 +48,9 @@
     function drawWarehouse(x, y, color, name, image, cargos) {
         //context.drawImage(image, x * delta, y * delta, delta, delta);
 
-        for (j = 0; j < cargos; j++) {
-            context.drawImage(cargo_img, x * delta + delta / 2, y * delta - delta / 3 - 11 * j, 10, 10);
+        for (j = 0; j < cargos.length; j++) {
+            let cargoType = cargos[j]
+            context.drawImage(cargoImages[cargoType], x * delta + delta / 2, y * delta - delta / 3 - 11 * j, 10, 10);
         }
 
         // context.fillStyle = "black";
@@ -65,7 +66,7 @@
         context.stroke();
     }
 
-    function drawTransport(image, begin, end, percent, padding, cargo_count) {
+    function drawTransport(image, begin, end, percent, padding, cargos) {
         bwh = warehouses.filter(function (x) {
             return x['name'] == begin;
         })[0];
@@ -84,8 +85,9 @@
         y1 = x0 * Math.sin(-angle) + y0 * Math.cos(-angle);
 
 
-        for (j = 0; j < cargo_count; j++) {
-            context.drawImage(cargo_img, x0 + delta / 2, y0 - 11 * j, 10, 10);
+        for (j = 0; j < cargos.length; j++) {
+            let cargoType = cargos[j];
+            context.drawImage(cargoImages[cargoType], x0 + delta / 2, y0 - 11 * j, 10, 10);
         }
 
         context.save();
@@ -102,11 +104,15 @@
             div.innerHTML += "<li>" + JSON.stringify(event) + "</li>";
     }
 
+    let cargos = [
+        "A","A","A","B","B","B","B","B"
+    ]
+
     var warehouses = [
-        {"name": "FACTORY", "x": 4.5, "y": 5.5, "picture": 'factory.png', "cargos": 8, "image": new Image()},
-        {"name": "PORT", "x": 8, "y": 5, "picture": 'port.png', "cargos": 0, "image": new Image()},
-        {"name": "A", "x": 13.4, "y": 5, "picture": 'warehouse_a.png', "cargos": 0, "image": new Image()},
-        {"name": "B", "x": 13.5, "y": 14, "picture": 'warehouse_b.png', "cargos": 0, "image": new Image()}];
+        {"name": "FACTORY", "x": 4.5, "y": 5.5, "picture": 'factory.png', "cargos": cargos, "image": new Image()},
+        {"name": "PORT", "x": 8, "y": 5, "picture": 'port.png', "cargos": [], "image": new Image()},
+        {"name": "A", "x": 13.4, "y": 5, "picture": 'warehouse_a.png', "cargos": [], "image": new Image()},
+        {"name": "B", "x": 13.5, "y": 14, "picture": 'warehouse_b.png', "cargos": [], "image": new Image()}];
 
     warehouses.forEach(function (item, i, arr) {
         item["image"].src = item["picture"];
@@ -130,8 +136,14 @@
     var back=new Image();
     back.src="back.jpg";
     
-    var cargo_img = new Image();
-    cargo_img.src="cargo.png";
+    const cargo_img_A = new Image();
+    cargo_img_A.src="cargo_A.png";
+    const cargo_img_B = new Image();
+    cargo_img_B.src="cargo_B.png";
+    const cargoImages = {
+        "A": cargo_img_A,
+        "B": cargo_img_B
+    }
 
     let time = 0;
     let readIndex = 0;
@@ -174,7 +186,7 @@
                 bwh = warehouses.filter(function (x) {
                     return x['name'] == begin;
                 })[0];
-                bwh["cargos"] -= event_list[i]["cargo"].length;
+                bwh["cargos"].splice(0, event_list[i]["cargo"].length);
                 continue;
             }
 
@@ -183,7 +195,10 @@
                 bwh = warehouses.filter(function (x) {
                     return x['name'] == begin;
                 })[0];
-                bwh["cargos"] += event_list[i]["cargo"].length;
+                let cargoUnloaded = Array
+                    .from(event_list[i]["cargo"])
+                    .map(c => c.destination);
+                bwh["cargos"] = bwh["cargos"].concat(cargoUnloaded);
                 continue;
             }
 
@@ -205,12 +220,15 @@
             })[0];
 
             distance = distances[0]["Distance"];
+            let cargoOnVehicle = Array
+                    .from(event_list[i]["cargo"])
+                    .map(c => c.destination);
             move[event_list[i]["transport_id"]] = {
                 "Start": time,
                 "Finish": time + distance,
                 "Begin": begin,
                 "End": end,
-                "Cargos": event_list[i]["cargo"].length
+                "Cargos": cargoOnVehicle
             }
 
             direction = (bwh["x"] >= ewh["x"] ? "left" : "right");
