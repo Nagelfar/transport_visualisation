@@ -26,6 +26,7 @@
 
     var canvas = document.getElementById("canvas");
     var context = canvas.getContext("2d");
+    const urlParams = new URLSearchParams(window.location.search);
 
     function drawBoard() {
         for (var x = 0; x <= bw; x += delta) {
@@ -144,6 +145,10 @@
         "A": cargo_img_A,
         "B": cargo_img_B
     }
+
+    let speed = Number.parseFloat(urlParams.get('speed'))
+    if(!speed || speed == 0.0)
+        speed = 0.07;
 
     let time = 0;
     let readIndex = 0;
@@ -265,7 +270,7 @@
 
         }
         
-        time += 0.07;
+        time += speed;
 
 
         
