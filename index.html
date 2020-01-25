@@ -67,7 +67,7 @@
         context.stroke();
     }
 
-    function drawTransport(image, begin, end, percent, padding, cargos) {
+    function drawTransport(image, begin, end, percent, padding, warehouses, cargos) {
         bwh = warehouses.filter(function (x) {
             return x['name'] == begin;
         })[0];
@@ -105,20 +105,6 @@
             div.innerHTML += "<li>" + JSON.stringify(event) + "</li>";
     }
 
-    let cargos = [
-        "A","A","A","B","B","B","B","B"
-    ]
-
-    var warehouses = [
-        {"name": "FACTORY", "x": 4.5, "y": 5.5, "picture": 'factory.png', "cargos": cargos, "image": new Image()},
-        {"name": "PORT", "x": 8, "y": 5, "picture": 'port.png', "cargos": [], "image": new Image()},
-        {"name": "A", "x": 13.4, "y": 5, "picture": 'warehouse_a.png', "cargos": [], "image": new Image()},
-        {"name": "B", "x": 13.5, "y": 14, "picture": 'warehouse_b.png', "cargos": [], "image": new Image()}];
-
-    warehouses.forEach(function (item, i, arr) {
-        item["image"].src = item["picture"];
-    });
-
     var routes = [{'Begin': 'FACTORY', 'End': 'PORT', 'Distance': 1},
         {'Begin': 'FACTORY', 'End': 'B', 'Distance': 5},
         {'Begin': 'PORT', 'End': 'A', 'Distance': 4}];
@@ -150,131 +136,202 @@
     if(!speed || speed == 0.0)
         speed = 0.07;
 
-    let time = 0;
-    let readIndex = 0;
-    move = {};
-
-    let timerId = setInterval(function () {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        drawBackground(0,0,17,17, back);
-        //drawBoard();
-
-
-        routes.forEach(function (item, i, arr) {
-            bwh = warehouses.filter(function (x) {
-                return x['name'] == item['Begin'];
-            })[0];
-            ewh = warehouses.filter(function (x) {
-                return x['name'] == item['End'];
-            })[0];
-
-            //drawRoute(bwh["x"], bwh["y"], ewh["x"], ewh["y"]);
-        });
-
-
-        showTime = true;
-        i = 0;
-        for (i = readIndex; i < event_list.length; i++) {
-            if (event_list[i]["time"] > time)
-                break;
-
-            if (showTime) {
-                write_log({"time": event_list[i]["time"]});
-                showTime = false;
-            }
-
-            readIndex++;
-
-            write_log(event_list[i]);
-            if (event_list[i]["event"] == "LOAD") {
-                let begin = event_list[i]["location"];
-                bwh = warehouses.filter(function (x) {
-                    return x['name'] == begin;
-                })[0];
-                bwh["cargos"].splice(0, event_list[i]["cargo"].length);
-                continue;
-            }
-
-            if (event_list[i]["event"] == "UNLOAD") {
-                let begin = event_list[i]["location"];
-                bwh = warehouses.filter(function (x) {
-                    return x['name'] == begin;
-                })[0];
-                let cargoUnloaded = Array
-                    .from(event_list[i]["cargo"])
-                    .map(c => c.destination);
-                bwh["cargos"] = bwh["cargos"].concat(cargoUnloaded);
-                continue;
-            }
-
-
-            if (event_list[i]["event"] != "DEPART")
-                continue;
-
-            let begin = event_list[i]["location"];
-            let end = event_list[i]["destination"];
-            let distances = routes.filter(function (x) {
-                return x['Begin'] == begin && x['End'] == end || x['Begin'] == end && x['End'] == begin;
-            });
-
-            bwh = warehouses.filter(function (x) {
-                return x['name'] == begin;
-            })[0];
-            ewh = warehouses.filter(function (x) {
-                return x['name'] == end;
-            })[0];
-
-            distance = distances[0]["Distance"];
-            let cargoOnVehicle = Array
-                    .from(event_list[i]["cargo"])
-                    .map(c => c.destination);
-            move[event_list[i]["transport_id"]] = {
-                "Start": time,
-                "Finish": time + distance,
-                "Begin": begin,
-                "End": end,
-                "Cargos": cargoOnVehicle
-            }
-
-            direction = (bwh["x"] >= ewh["x"] ? "left" : "right");
-
-            move[event_list[i]["transport_id"]]["image"] = transport_kind.filter(function (item) {
-                return item["direction"] == direction && item["kind"] == event_list[i]["kind"];
-            })[0]["image"];
-        }
-
-
-        let padding = 0;
-        for (var key in move) {
-            percent = 100 * (time - move[key]["Start"]) / (move[key]["Finish"] - move[key]["Start"]);
-
-            if (percent < 10)
-                percent = 10;
-            if (percent > 90)
-                percent = 90;
-            drawTransport(move[key]["image"], move[key]["Begin"], move[key]["End"], percent, padding, move[key]["Cargos"]);
-            padding += 10
-        }
+    function setup(cargos, event_list){
+        var warehouses = [
+            {"name": "FACTORY", "x": 4.5, "y": 5.5, "picture": 'factory.png', "cargos": cargos, "image": new Image()},
+            {"name": "PORT", "x": 8, "y": 5, "picture": 'port.png', "cargos": [], "image": new Image()},
+            {"name": "A", "x": 13.4, "y": 5, "picture": 'warehouse_a.png', "cargos": [], "image": new Image()},
+            {"name": "B", "x": 13.5, "y": 14, "picture": 'warehouse_b.png', "cargos": [], "image": new Image()}];
 
         warehouses.forEach(function (item, i, arr) {
-            drawWarehouse(item["x"], item["y"], 'rgba(0, 0, 200, 0.5)', item["name"], item["image"], item["cargos"]);
-        });
+            item["image"].src = item["picture"];
+        });        
+
+       
+        let time = 0;
+        let readIndex = 0;
+        move = {};
+
+        let timerId = setInterval(function () {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground(0,0,17,17, back);
+            //drawBoard();
 
 
-        if (time > event_list[event_list.length - 1]["time"]) {
-            clearInterval(timerId);
+            routes.forEach(function (item, i, arr) {
+                bwh = warehouses.filter(function (x) {
+                    return x['name'] == item['Begin'];
+                })[0];
+                ewh = warehouses.filter(function (x) {
+                    return x['name'] == item['End'];
+                })[0];
 
-            context.fillStyle = "red";
-            context.font = '88px serif';
-            context.fillText("FINISH", 300, 300);
+                //drawRoute(bwh["x"], bwh["y"], ewh["x"], ewh["y"]);
+            });
 
-        }
+
+            showTime = true;
+            i = 0;
+            for (i = readIndex; i < event_list.length; i++) {
+                if (event_list[i]["time"] > time)
+                    break;
+
+                if (showTime) {
+                    write_log({"time": event_list[i]["time"]});
+                    showTime = false;
+                }
+
+                readIndex++;
+
+                write_log(event_list[i]);
+                if (event_list[i]["event"] == "LOAD") {
+                    let begin = event_list[i]["location"];
+                    bwh = warehouses.filter(function (x) {
+                        return x['name'] == begin;
+                    })[0];
+                    bwh["cargos"].splice(0, event_list[i]["cargo"].length);
+                    continue;
+                }
+
+                if (event_list[i]["event"] == "UNLOAD") {
+                    let begin = event_list[i]["location"];
+                    bwh = warehouses.filter(function (x) {
+                        return x['name'] == begin;
+                    })[0];
+                    let cargoUnloaded = Array
+                        .from(event_list[i]["cargo"])
+                        .map(c => c.destination);
+                    bwh["cargos"] = bwh["cargos"].concat(cargoUnloaded);
+                    continue;
+                }
+
+
+                if (event_list[i]["event"] != "DEPART")
+                    continue;
+
+                let begin = event_list[i]["location"];
+                let end = event_list[i]["destination"];
+                let distances = routes.filter(function (x) {
+                    return x['Begin'] == begin && x['End'] == end || x['Begin'] == end && x['End'] == begin;
+                });
+
+                bwh = warehouses.filter(function (x) {
+                    return x['name'] == begin;
+                })[0];
+                ewh = warehouses.filter(function (x) {
+                    return x['name'] == end;
+                })[0];
+
+                distance = distances[0]["Distance"];
+                let cargoOnVehicle = Array
+                        .from(event_list[i]["cargo"])
+                        .map(c => c.destination);
+                move[event_list[i]["transport_id"]] = {
+                    "Start": time,
+                    "Finish": time + distance,
+                    "Begin": begin,
+                    "End": end,
+                    "Cargos": cargoOnVehicle
+                }
+
+                direction = (bwh["x"] >= ewh["x"] ? "left" : "right");
+
+                move[event_list[i]["transport_id"]]["image"] = transport_kind.filter(function (item) {
+                    return item["direction"] == direction && item["kind"] == event_list[i]["kind"];
+                })[0]["image"];
+            }
+
+
+            let padding = 0;
+            for (var key in move) {
+                percent = 100 * (time - move[key]["Start"]) / (move[key]["Finish"] - move[key]["Start"]);
+
+                if (percent < 10)
+                    percent = 10;
+                if (percent > 90)
+                    percent = 90;
+                drawTransport(move[key]["image"], move[key]["Begin"], move[key]["End"], percent, padding, warehouses, move[key]["Cargos"]);
+                padding += 10
+            }
+
+            warehouses.forEach(function (item, i, arr) {
+                drawWarehouse(item["x"], item["y"], 'rgba(0, 0, 200, 0.5)', item["name"], item["image"], item["cargos"]);
+            });
+
+
+            if (time > event_list[event_list.length - 1]["time"]) {
+                clearInterval(timerId);
+
+                context.fillStyle = "red";
+                context.font = '88px serif';
+                context.fillText("FINISH", 300, 300);
+
+            }
+            
+            time += speed;            
+        }, 50);
+    }
+
+    function parse(data){
+        const jsonLines = data
+            .split(/\r\n|\r|\n/g)
+            .filter(x=>!x.startsWith('#'))
+            .map(JSON.parse)
         
-        time += speed;
+        return jsonLines
+    }
 
 
-        
-    }, 50);
+
+    const scenarioFile = urlParams.get('scenario');
+    if(scenarioFile){
+        // debugger;
+        // const link = document.createElement('iframe');
+        // link.onload = () => {
+        //     const l = parse(link.innerText)
+        //     setup(JSON.parse(l));
+        // }
+        // link.allow = "*";
+        // // link.type = "text/plain";
+        // link.src = scenarioFile;
+
+        // link.style.display = 'none';
+        // document.body.appendChild(link);
+
+        // setTimeout(()=> {
+        //     const l = parse(link.innerText)
+        //     setup(JSON.parse(l));
+        // },100);
+
+        const cargoName = scenarioFile
+            .substring(scenarioFile.lastIndexOf('/') + 1 || 0)
+            .replace(".log","");
+
+        let cargosFromFilename = Array.from(cargoName)
+
+        fetch(scenarioFile)
+            .then(response => response.text())
+            .then(data => {
+                const jsonLines = data
+                    .split(/\r\n|\r|\n/g)
+                    .filter(x=> !(x.startsWith('#') || !x || x.length == 0))
+                    .map(JSON.parse)
+                    .map(e => {
+                        if(e.kind == 'SHIP')
+                            e.kind = 'FERRY';
+                        return e;
+                    })
+                
+                return jsonLines
+            })
+            .then(events => setup(cargosFromFilename, events))
+            .catch(console.error)
+    } else {
+        let cargos = [
+            "A","A","A","B","B","B","B","B"
+        ]
+        setup(cargos, event_list);
+    }
 
 
 </script>
