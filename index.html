@@ -42,6 +42,12 @@
         context.stroke();
     }
 
+    function drawTime(time){
+        context.fillStyle = "black";
+        context.font = '66px serif';
+        context.fillText("Time: " + Math.floor(time), 10, 700);
+    }
+
     function drawBackground(x, y, w, h, image) {
         context.drawImage(image, x * delta, y * delta, w*delta, h*delta);
     }
@@ -268,7 +274,8 @@
 
             }
             
-            time += speed;            
+            time += speed;
+            drawTime(time);
         }, 50);
     }
 
@@ -322,6 +329,11 @@
 
         div.appendChild(fileUpload);
         document.body.appendChild(div);
+    }
+
+    const showLogs = urlParams.get('showLogs')
+    if(showLogs == 'false'){
+        document.getElementById('log').style = "visibility: hidden";
     }
 
     const scenarioFile = urlParams.get('scenario');
