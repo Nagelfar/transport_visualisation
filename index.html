@@ -272,60 +272,70 @@
         }, 50);
     }
 
-    function parse(data){
+    function parseLogText(data){
         const jsonLines = data
             .split(/\r\n|\r|\n/g)
-            .filter(x=>!x.startsWith('#'))
+            .filter(x=> !(x.startsWith('#') || !x || x.length == 0))
             .map(JSON.parse)
+            .map(e => {
+                if(e.kind == 'SHIP')
+                    e.kind = 'FERRY';
+                return e;
+            })
         
         return jsonLines
     }
 
-
-
-    const scenarioFile = urlParams.get('scenario');
-    if(scenarioFile){
-        // debugger;
-        // const link = document.createElement('iframe');
-        // link.onload = () => {
-        //     const l = parse(link.innerText)
-        //     setup(JSON.parse(l));
-        // }
-        // link.allow = "*";
-        // // link.type = "text/plain";
-        // link.src = scenarioFile;
-
-        // link.style.display = 'none';
-        // document.body.appendChild(link);
-
-        // setTimeout(()=> {
-        //     const l = parse(link.innerText)
-        //     setup(JSON.parse(l));
-        // },100);
-
+    function getCargoListFromLogFileName(name){
         const cargoName = scenarioFile
             .substring(scenarioFile.lastIndexOf('/') + 1 || 0)
             .replace(".log","");
 
-        let cargosFromFilename = Array.from(cargoName)
+        return Array.from(cargoName)
+    }
+
+    function readRawFile(err) {
+        const div = document.createElement('div');
+        const pre = document.createElement('pre')
+        div.appendChild(pre);
+        pre.innerText = err
+        const label = document.createElement('label');
+        label.innerText = 'Could not load or process file. Please (re)upload file';
+        div.appendChild(label)
+        const fileUpload = document.createElement('input');
+        fileUpload.type='file';
+        fileUpload.accept='text/plain';
+        fileUpload.onchange = function(event) {
+            var input = event.target;
+
+            var reader = new FileReader();
+            reader.onload = function(){
+                const text = reader.result;
+                const log = parseLogText(text);
+                const cargos = getCargoListFromLogFileName(input.files[0].name)
+                document.body.removeChild(div);
+
+                setup(cargos,log);                
+            };
+            reader.readAsText(input.files[0]);
+        };
+
+        div.appendChild(fileUpload);
+        document.body.appendChild(div);
+    }
+
+    const scenarioFile = urlParams.get('scenario');
+    
+    if(scenarioFile) {
+       const cargos = getCargoListFromLogFileName(scenarioFile)
 
         fetch(scenarioFile)
             .then(response => response.text())
-            .then(data => {
-                const jsonLines = data
-                    .split(/\r\n|\r|\n/g)
-                    .filter(x=> !(x.startsWith('#') || !x || x.length == 0))
-                    .map(JSON.parse)
-                    .map(e => {
-                        if(e.kind == 'SHIP')
-                            e.kind = 'FERRY';
-                        return e;
-                    })
-                
-                return jsonLines
+            .then(parseLogText)
+            .then(events => setup(cargos, events))
+            .catch(err=>{
+                readRawFile(err);
             })
-            .then(events => setup(cargosFromFilename, events))
-            .catch(console.error)
     } else {
         let cargos = [
             "A","A","A","B","B","B","B","B"
