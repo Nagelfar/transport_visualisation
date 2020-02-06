@@ -158,7 +158,7 @@
         let readIndex = 0;
         move = {};
 
-        let timerId = setInterval(function () {
+        function mainLoop() {
             context.clearRect(0, 0, canvas.width, canvas.height);
             drawBackground(0,0,17,17, back);
             //drawBoard();
@@ -276,7 +276,9 @@
             
             time += speed;
             drawTime(time);
-        }, 50);
+        }
+
+        let timerId = setInterval(mainLoop, 50);
     }
 
     function parseLogText(data){
@@ -294,8 +296,8 @@
     }
 
     function getCargoListFromLogFileName(name){
-        const cargoName = scenarioFile
-            .substring(scenarioFile.lastIndexOf('/') + 1 || 0)
+        const cargoName = name
+            .substring(name.lastIndexOf('/') + 1 || 0)
             .replace(".log","");
 
         return Array.from(cargoName)
@@ -338,16 +340,20 @@
 
     const scenarioFile = urlParams.get('scenario');
     
-    if(scenarioFile) {
-       const cargos = getCargoListFromLogFileName(scenarioFile)
+    if(scenarioFile != null) {
+        if(scenarioFile){
+            const cargos = getCargoListFromLogFileName(scenarioFile)
 
-        fetch(scenarioFile)
-            .then(response => response.text())
-            .then(parseLogText)
-            .then(events => setup(cargos, events))
-            .catch(err=>{
-                readRawFile(err);
-            })
+            fetch(scenarioFile)
+                .then(response => response.text())
+                .then(parseLogText)
+                .then(events => setup(cargos, events))
+                .catch(err=>{
+                    readRawFile(err);
+                })
+        } else {
+            readRawFile("No scenario specified");
+        }
     } else {
         let cargos = [
             "A","A","A","B","B","B","B","B"
