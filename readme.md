@@ -5,7 +5,7 @@ It shows the simulation results of a particular solution based on its event stre
 
 The file must contain an event per line with the format specified in [Event Format](https://github.com/Softwarepark/exercises/blob/master/transport-tycoon-2.md). The file itself must be named after the scenario, e.g. `AABBAB.log`
 
-[![An example of a visualization as video](preview.png)](https://www.youtube.com/watch?v=Tw0IQxQoH9I)
+[![An example of a visualization as video](images/preview.png)](https://www.youtube.com/watch?v=Tw0IQxQoH9I)
 
 ## Running a visualization
 

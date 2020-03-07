@@ -99,18 +99,18 @@ const transport_kind = [
     { "kind": "FERRY", "direction": "right", "image": new Image() },
 ];
 
-transport_kind[0]["image"].src = "truck_left.png";
-transport_kind[1]["image"].src = "truck_right.png";
-transport_kind[2]["image"].src = "ship_left.png";
-transport_kind[3]["image"].src = "ship_right.png";
+transport_kind[0]["image"].src = "images/truck_left.png";
+transport_kind[1]["image"].src = "images/truck_right.png";
+transport_kind[2]["image"].src = "images/ship_left.png";
+transport_kind[3]["image"].src = "images/ship_right.png";
 
 const back = new Image();
-back.src = "back.jpg";
+back.src = "images/back.jpg";
 
 const cargo_img_A = new Image();
-cargo_img_A.src = "cargo_A.png";
+cargo_img_A.src = "images/cargo_A.png";
 const cargo_img_B = new Image();
-cargo_img_B.src = "cargo_B.png";
+cargo_img_B.src = "images/cargo_B.png";
 const cargoImages = {
     "A": cargo_img_A,
     "B": cargo_img_B
@@ -124,10 +124,10 @@ function setup(speed, cargos, event_list) {
     ];
 
     const warehouses = [
-        { "name": "FACTORY", "x": 4.5, "y": 5.5, "picture": 'factory.png', "cargos": cargos, "image": new Image() },
-        { "name": "PORT", "x": 8, "y": 5, "picture": 'port.png', "cargos": [], "image": new Image() },
-        { "name": "A", "x": 13.4, "y": 5, "picture": 'warehouse_a.png', "cargos": [], "image": new Image() },
-        { "name": "B", "x": 13.5, "y": 14, "picture": 'warehouse_b.png', "cargos": [], "image": new Image() }];
+        { "name": "FACTORY", "x": 4.5, "y": 5.5, "picture": 'images/factory.png', "cargos": cargos, "image": new Image() },
+        { "name": "PORT", "x": 8, "y": 5, "picture": 'images/port.png', "cargos": [], "image": new Image() },
+        { "name": "A", "x": 13.4, "y": 5, "picture": 'images/warehouse_a.png', "cargos": [], "image": new Image() },
+        { "name": "B", "x": 13.5, "y": 14, "picture": 'images/warehouse_b.png', "cargos": [], "image": new Image() }];
 
     warehouses.forEach(function (item, i, arr) {
         item["image"].src = item["picture"];
