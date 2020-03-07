@@ -16,7 +16,7 @@ The following ways to visualize a scenario are available:
 - The default scenario is loaded when no parameters are specified
 - Using the query parameter `scenario=<relative-file-path>` to specify the file to be loaded an visualized.
   Note: its relative to the `index.html` file and will only be loaded when used from a web server (due to CORS constraints from `localhost`)
-- Just use `scenario` with any value to upload a file
+- Just use `scenario` without any value and then manually upload a file
 
 Other options for the visualization
 

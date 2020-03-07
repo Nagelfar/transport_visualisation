@@ -6,6 +6,7 @@
 </head>
 <body>
 <table>
+    <caption >Cargos: <span id="caption"></span></caption>
     <tr>
         <td valign="top">
             <canvas id="canvas" width="820" height="820"></canvas>
@@ -15,17 +16,21 @@
         </td>
     </tr>
 </table>
-
+<div id="upload" style="display: none;">
+    <pre></pre>
+    <label>Could not load or process file. Please (re)upload file</label>
+    <input type="file"/>
+</div>
 
 <script type="application/javascript">
-    var bw = 820;
+    const bw = 820;
     // Box height
-    var bh = 820;
+    const bh = 820;
 
     var delta = 50;
 
-    var canvas = document.getElementById("canvas");
-    var context = canvas.getContext("2d");
+    const canvas = document.getElementById("canvas");
+    const context = canvas.getContext("2d");
     const urlParams = new URLSearchParams(window.location.search);
 
     function drawBoard() {
@@ -104,35 +109,32 @@
     }
 
     function write_log(event) {
-        let div = document.getElementById('log');
+        const div = document.getElementById('log');
         if (!("event" in event))
             div.innerHTML += "<li><strong>" + event["time"] + "</strong></li>";
         else
             div.innerHTML += "<li>" + JSON.stringify(event) + "</li>";
     }
 
-    var routes = [{'Begin': 'FACTORY', 'End': 'PORT', 'Distance': 1},
-        {'Begin': 'FACTORY', 'End': 'B', 'Distance': 5},
-        {'Begin': 'PORT', 'End': 'A', 'Distance': 4}];
-
-    var transport_kind = [
+    const transport_kind = [
         {"kind": "TRUCK", "direction": "left", "image": new Image()},
         {"kind": "TRUCK", "direction": "right", "image": new Image()},
         {"kind": "FERRY", "direction": "left", "image": new Image()},
         {"kind": "FERRY", "direction": "right", "image": new Image()},
     ];
+
     transport_kind[0]["image"].src = "truck_left.png";
     transport_kind[1]["image"].src = "truck_right.png";
     transport_kind[2]["image"].src = "ship_left.png";
     transport_kind[3]["image"].src = "ship_right.png";
     
-    var back=new Image();
-    back.src="back.jpg";
+    const back = new Image();
+    back.src = "back.jpg";
     
     const cargo_img_A = new Image();
-    cargo_img_A.src="cargo_A.png";
+    cargo_img_A.src = "cargo_A.png";
     const cargo_img_B = new Image();
-    cargo_img_B.src="cargo_B.png";
+    cargo_img_B.src = "cargo_B.png";
     const cargoImages = {
         "A": cargo_img_A,
         "B": cargo_img_B
@@ -143,7 +145,13 @@
         speed = 0.07;
 
     function setup(cargos, event_list){
-        var warehouses = [
+        const routes = [
+            {'Begin': 'FACTORY', 'End': 'PORT', 'Distance': 1},
+            {'Begin': 'FACTORY', 'End': 'B', 'Distance': 5},
+            {'Begin': 'PORT', 'End': 'A', 'Distance': 4}
+        ];
+
+        const warehouses = [
             {"name": "FACTORY", "x": 4.5, "y": 5.5, "picture": 'factory.png', "cargos": cargos, "image": new Image()},
             {"name": "PORT", "x": 8, "y": 5, "picture": 'port.png', "cargos": [], "image": new Image()},
             {"name": "A", "x": 13.4, "y": 5, "picture": 'warehouse_a.png', "cargos": [], "image": new Image()},
@@ -153,10 +161,12 @@
             item["image"].src = item["picture"];
         });        
 
+        document.getElementById('caption').innerText = cargos
+
        
         let time = 0;
         let readIndex = 0;
-        move = {};
+        let move = {};
 
         function mainLoop() {
             context.clearRect(0, 0, canvas.width, canvas.height);
@@ -290,9 +300,9 @@
                 if(e.kind == 'SHIP')
                     e.kind = 'FERRY';
                 return e;
-            })
+            });
         
-        return jsonLines
+        return jsonLines;
     }
 
     function getCargoListFromLogFileName(name){
@@ -300,20 +310,14 @@
             .substring(name.lastIndexOf('/') + 1 || 0)
             .replace(".log","");
 
-        return Array.from(cargoName)
+        return Array.from(cargoName);
     }
 
     function readRawFile(err) {
-        const div = document.createElement('div');
-        const pre = document.createElement('pre')
-        div.appendChild(pre);
+        const div = document.getElementById('upload');
+        const pre = document.querySelector('#upload pre')
         pre.innerText = err
-        const label = document.createElement('label');
-        label.innerText = 'Could not load or process file. Please (re)upload file';
-        div.appendChild(label)
-        const fileUpload = document.createElement('input');
-        fileUpload.type='file';
-        fileUpload.accept='text/plain';
+        const fileUpload = document.querySelector('#upload input');
         fileUpload.onchange = function(event) {
             var input = event.target;
 
@@ -322,15 +326,13 @@
                 const text = reader.result;
                 const log = parseLogText(text);
                 const cargos = getCargoListFromLogFileName(input.files[0].name)
-                document.body.removeChild(div);
+                div.style= "display: none";
 
                 setup(cargos,log);                
             };
             reader.readAsText(input.files[0]);
         };
-
-        div.appendChild(fileUpload);
-        document.body.appendChild(div);
+        div.style = '';
     }
 
     const showLogs = urlParams.get('showLogs')
@@ -350,14 +352,14 @@
                 .then(events => setup(cargos, events))
                 .catch(err=>{
                     readRawFile(err);
-                })
+                });
         } else {
             readRawFile("No scenario specified");
         }
     } else {
         let cargos = [
             "A","A","A","B","B","B","B","B"
-        ]
+        ];
         setup(cargos, event_list);
     }
 
