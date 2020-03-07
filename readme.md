@@ -25,5 +25,5 @@ Other options for the visualization
 
 Sample visualizations
 
-- `ABB` with no logs [https://htmlpreview.github.io/?https://github.com/Nagelfar/transport-tycoon/blob/enhancements/transport_visulazation/index.html?speed=0.05&scenario=outputs%2FABB.log&showLogs=false](https://htmlpreview.github.io/?https://github.com/Nagelfar/transport-tycoon/blob/enhancements/transport_visulazation/index.html?speed=0.05&scenario=outputs%2FABB.log&showLogs=false)
-- `ABBBABAAABBB` with slower speed an logs [https://htmlpreview.github.io/?https://github.com/Nagelfar/transport-tycoon/blob/enhancements/transport_visulazation/index.html?speed=0.02&scenario=outputs%2FABBBABAAABBB.log](https://htmlpreview.github.io/?https://github.com/Nagelfar/transport-tycoon/blob/enhancements/transport_visulazation/index.html?speed=0.02&scenario=outputs%2FABBBABAAABBB.log)
+- `ABB` with no logs [https://htmlpreview.github.io/?https://github.com/Nagelfar/transport_visualisation/blob/master/index.html?speed=0.05&scenario=outputs%2FABB.log&showLogs=false](https://htmlpreview.github.io/?https://github.com/Nagelfar/transport_visualisation/blob/master/index.html?speed=0.05&scenario=outputs%2FABB.log&showLogs=false)
+- `ABBBABAAABBB` with slower speed an logs [https://htmlpreview.github.io/?https://github.com/Nagelfar/transport_visualisation/blob/master/index.html?speed=0.02&scenario=outputs%2FABBBABAAABBB.log](https://github.com/Nagelfar/transport_visualisation/blob/master/index.html?speed=0.02&scenario=outputs%2FABBBABAAABBB.log)
